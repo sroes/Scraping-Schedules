@@ -1,0 +1,62 @@
+---
+title: "x06 Scraping Schedules"
+author: Scott Roes
+output: html_notebook
+---
+ 
+First, we declare the read_class_function passing the url as its agrument. Then we choose which columns we want from the class schedule urls, then combine them with a single tibble then return it. Under the read_class_function are the function calls that have each url for the different sections and years.
+
+```{r}
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("rvest")
+include("magrittr")
+include("httr")
+include("stringr")
+include("tidyr")
+include("dplyr")
+
+read_class_schedule <- function(url){ schedule <-read_html(url)
+
+subject <- schedule  %>% 
+                html_nodes("td.subj") %>% 
+                html_text()
+
+class_number <- schedule  %>% 
+                html_nodes("td.cat_num") %>% 
+                html_text()
+section_number <- schedule  %>% 
+                  html_nodes("td.sect") %>% 
+                  html_text() 
+            
+course_title <- schedule  %>% 
+                html_nodes("td.title") %>% 
+                html_text()  
+           
+instructor <- schedule  %>% 
+              html_nodes("td.Instructor") %>% 
+              html_text()  
+    
+enrollment <- schedule  %>% 
+              html_nodes("td.enrtot") %>% 
+              html_text()
+         
+class_schedule <- tibble(Subject= subject, "Cat Num"= class_number, Sect= section_number, Title= course_title, Instructor= instructor, "Tot enrol"= enrollment)
+
+return(class_schedule)
+}
+
+csci2019 <- read_class_schedule("http://ems.csuchico.edu/APSS/schedule/spr2019/CSCI.shtml")
+
+csci2020 <- read_class_schedule("http://ems.csuchico.edu/APSS/schedule/spr2020/CSCI.shtml")
+
+math2019 <- read_class_schedule("http://ems.csuchico.edu/APSS/schedule/spr2019/MATH.shtml")
+
+math2020 <- read_class_schedule("http://ems.csuchico.edu/APSS/schedule/spr2020/MATH.shtml")
+
+
+```
+
